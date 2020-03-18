@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { Component } from 'react';
 // import Radium from 'radium';
 /* import styled from 'styled-components'; */
 import classes from './Person.css';
+
+import Aux from '../../../hoc/Auxiliary';
+import withClass from '../../../hoc/WithClass';
+import PropTypes from 'prop-types';
+import AuthContext from '../../../context/auth-context';
 
 // the styled-components package returns a new React component, this is why it has to be created outside of the person component
 /* const StyledDiv = styled.div`
@@ -16,7 +21,7 @@ import classes from './Person.css';
   }
 `; */
 
-const person = props => {
+class Person extends Component {
   // const style = {
   //   '@media (min-width: 500px)': {
   //     width: '450px'
@@ -29,15 +34,48 @@ const person = props => {
     throw new Error('Something went wrong');
   } */
 
-  return (
-    <div className={classes.Person}>
-      <p onClick={props.click}>
-        I'm {props.name} and I am {props.age} years old.
-      </p>
-      <p>{props.children}</p>
-      <input type="text" onChange={props.changed} value={props.name} />
-    </div>
-  );
+  constructor(props) {
+    super(props);
+    // using this method to create a reference is the more modern way. The other way was used in older versions of React
+    this.inputElementRef = React.createRef();
+  }
+
+  // React adds the values of AuthContext to this.context. contextType must be static.
+  static contextType = AuthContext;
+
+  componentDidMount() {
+    // this.inputElement.focus();
+    this.inputElementRef.current.focus();
+    console.log(this.context.isAuthenticated)
+  }
+
+  render() {
+    console.log('[Person.js] rendering...');
+
+    return (
+      <Aux>
+        {this.context.isAuthenticated ? <p>Authorised!</p> : <p>Please log in</p>}
+        <p onClick={this.props.click}>
+          I'm {this.props.name} and I am {this.props.age} years old.
+        </p>
+        <p>{this.props.children}</p>
+        <input
+          type="text"
+          // ref={(inputEle) => {this.inputElement = inputEle}}
+          ref={this.inputElementRef}
+          onChange={this.props.changed}
+          value={this.props.name}
+        />
+      </Aux>
+    );
+  }
+}
+
+Person.propTypes = {
+  click: PropTypes.func,
+  name: PropTypes.string,
+  age: PropTypes.number,
+  change: PropTypes.func
 };
 
-export default person;
+export default withClass(Person, classes.Person);
